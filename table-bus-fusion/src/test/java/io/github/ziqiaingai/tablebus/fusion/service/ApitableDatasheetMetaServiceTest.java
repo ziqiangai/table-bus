@@ -41,16 +41,21 @@ public class ApitableDatasheetMetaServiceTest {
     @Test
     public void testGetMeta() {
 
+
+        ApitableDatasheetMetaEntity xx = apitableDatasheetMetaService.getOne(new QueryWrapper<ApitableDatasheetMetaEntity>()
+                .lambda()
+                .eq(ApitableDatasheetMetaEntity::getDstId, "dst4VSuMWKa6y9bF5G7"));
+
         ExecutorService executorService = Executors.newFixedThreadPool(5);
         long now = System.currentTimeMillis();
         ApitableDatasheetMetaEntity dst4VSuMWK6y9bF5G7 = apitableDatasheetMetaService.getOne(new QueryWrapper<ApitableDatasheetMetaEntity>()
                 .lambda()
                 .eq(ApitableDatasheetMetaEntity::getDstId, "dst4VSuMWK6y9bF5G7"));
         long now1 = System.currentTimeMillis();
-        System.out.println("query cost" + (now1 - now));
+        System.out.println("query cost: " + (now1 - now));
         ApitableDatasheetMetaVO convert = ApitableDatasheetMetaConvert.INSTANCE.convert(dst4VSuMWK6y9bF5G7);
         long now2 = System.currentTimeMillis();
-        System.out.println("parser cost" + (now2 - now1));
+        System.out.println("parser cost: " + (now2 - now1));
 
         try {
             // 创建三个Callable任务，分别调用三个Service的方法
@@ -89,7 +94,7 @@ public class ApitableDatasheetMetaServiceTest {
             }
             meta.set("views", views);
             vo.setMetaData(meta);
-            System.out.println("combine cost" + (System.currentTimeMillis() - now2));
+            System.out.println("combine cost: " + (System.currentTimeMillis() - now2));
             assertEquals(convert, vo);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
