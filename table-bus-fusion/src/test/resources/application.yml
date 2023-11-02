@@ -1,0 +1,14 @@
+server:
+  port: 3333
+
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+spring:
+  datasource:
+    testOnBorrow: true
+    validationQuery: SELECT 1
+    url: jdbc:mysql://192.168.0.104:${MYSQL_PORT:3306}/${MYSQL_DATABASE:apitable}?characterEncoding=utf8&autoReconnect=true&useSSL=${MYSQL_SSL_ENABLED:false}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:apitable@com}
