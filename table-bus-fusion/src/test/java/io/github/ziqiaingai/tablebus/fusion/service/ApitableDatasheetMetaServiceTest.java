@@ -39,7 +39,38 @@ public class ApitableDatasheetMetaServiceTest {
     private MetaFieldMapService metaFieldMapService;
 
     @Test
-    public void testGetMeta() {
+    public void testSplitTable() {
+        ApitableDatasheetMetaConvert instance = ApitableDatasheetMetaConvert.INSTANCE;
+
+
+        ApitableDatasheetMetaEntity xx = apitableDatasheetMetaService.getOne(new QueryWrapper<ApitableDatasheetMetaEntity>()
+                .lambda()
+                .eq(ApitableDatasheetMetaEntity::getDstId, "dst4VSuMWKa6y9bF5G7"));
+
+
+        long now = System.currentTimeMillis();
+        ApitableDatasheetMetaEntity dst4VSuMWK6y9bF5G7 = apitableDatasheetMetaService.getOne(new QueryWrapper<ApitableDatasheetMetaEntity>()
+                .lambda()
+                .eq(ApitableDatasheetMetaEntity::getDstId, "dstjvT6jkHKvWUAe0i"));
+        long now1 = System.currentTimeMillis();
+        System.out.println("query cost: " + (now1 - now));
+        ApitableDatasheetMetaVO convert = instance.convert(dst4VSuMWK6y9bF5G7);
+        long now2 = System.currentTimeMillis();
+        System.out.println("parser cost: " + (now2 - now1));
+        MetaArchIdsEntity metaArchIdsEntity = instance.convertToArchIds(convert);
+        ObjectNode metaData = (ObjectNode) convert.getMetaData();
+        metaData.fieldNames().forEachRemaining(System.out::println);
+        List<MetaViewsEntity> metaViewsEntities = instance.convertToViews(convert);
+        MetaFieldMapEntity metaFieldMapEntity = instance.convertToFieldsMap(convert);
+        System.out.println(metaArchIdsEntity);
+        metaArchIdsService.save(metaArchIdsEntity);
+        metaViewsService.saveBatch(metaViewsEntities);
+        metaFieldMapService.save(metaFieldMapEntity);
+
+    }
+
+    @Test
+    public void testGetMeta5000Records() {
 
 
         ApitableDatasheetMetaEntity xx = apitableDatasheetMetaService.getOne(new QueryWrapper<ApitableDatasheetMetaEntity>()

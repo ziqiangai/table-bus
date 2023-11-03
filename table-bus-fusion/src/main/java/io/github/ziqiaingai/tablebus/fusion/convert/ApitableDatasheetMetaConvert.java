@@ -31,9 +31,15 @@ public interface ApitableDatasheetMetaConvert extends BaseMapper{
     List<ApitableDatasheetMetaVO> convertList(List<ApitableDatasheetMetaEntity> list);
 
     MetaArchIdsEntity convertToArchIdsBase(ApitableDatasheetMetaVO vo);
+
     default MetaArchIdsEntity convertToArchIds(ApitableDatasheetMetaVO vo){
         MetaArchIdsEntity metaArchIdsEntity = convertToArchIdsBase(vo);
-        metaArchIdsEntity.setArchIds(vo.getMetaData().path("archivedRecordIds").toString());
+        JsonNode archivedRecordIds = vo.getMetaData().path("archivedRecordIds");
+        if (archivedRecordIds.isMissingNode()) {
+            metaArchIdsEntity.setArchIds("[]");
+        }else {
+            metaArchIdsEntity.setArchIds(archivedRecordIds.toString());
+        }
         return metaArchIdsEntity;
     }
 
