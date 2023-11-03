@@ -70,6 +70,75 @@ public class ApitableDatasheetMetaServiceTest {
     }
 
     @Test
+    public void testGetMeta10000Records() {
+
+
+        ApitableDatasheetMetaEntity xx = apitableDatasheetMetaService.getOne(new QueryWrapper<ApitableDatasheetMetaEntity>()
+                .lambda()
+                .eq(ApitableDatasheetMetaEntity::getDstId, "dst4VSuMWKa6y9bF5G7"));
+
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        long now = System.currentTimeMillis();
+        ApitableDatasheetMetaEntity dst4VSuMWK6y9bF5G7 = apitableDatasheetMetaService.getOne(new QueryWrapper<ApitableDatasheetMetaEntity>()
+                .lambda()
+                .eq(ApitableDatasheetMetaEntity::getDstId, "dstjvT6jkHKvWUAe0i"));
+        long now1 = System.currentTimeMillis();
+        System.out.println("query cost: " + (now1 - now));
+        ApitableDatasheetMetaVO convert = ApitableDatasheetMetaConvert.INSTANCE.convert(dst4VSuMWK6y9bF5G7);
+        long now2 = System.currentTimeMillis();
+        System.out.println("parser cost: " + (now2 - now1));
+
+        try {
+            // 创建三个Callable任务，分别调用三个Service的方法
+            Callable<MetaFieldMapEntity> taskA = () -> metaFieldMapService.getOne(new QueryWrapper<MetaFieldMapEntity>()
+                    .lambda()
+                    .eq(MetaFieldMapEntity::getDstId, "dstjvT6jkHKvWUAe0i"));
+            Callable<List<MetaViewsEntity>> taskB = () -> metaViewsService.list(new QueryWrapper<MetaViewsEntity>()
+                    .lambda()
+                    .eq(MetaViewsEntity::getDstId, "dstjvT6jkHKvWUAe0i"));
+            Callable<MetaArchIdsEntity> taskC = () -> metaArchIdsService.getOne(new QueryWrapper<MetaArchIdsEntity>()
+                    .lambda()
+                    .eq(MetaArchIdsEntity::getDstId, "dstjvT6jkHKvWUAe0i"));
+
+            // 提交任务并获取Future对象
+            Future<MetaFieldMapEntity> futureA = executorService.submit(taskA);
+            Future<List<MetaViewsEntity>> futureB = executorService.submit(taskB);
+            Future<MetaArchIdsEntity> futureC = executorService.submit(taskC);
+
+            // 等待所有任务完成
+            executorService.shutdown();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+
+            // 获取任务的结果
+            MetaFieldMapEntity dataA = futureA.get();
+            List<MetaViewsEntity> dataB = futureB.get();
+            MetaArchIdsEntity dataC = futureC.get();
+
+            // 组装数据
+            ApitableDatasheetMetaVO vo = ApitableDatasheetMetaConvert.INSTANCE.convert(dataA);
+            ObjectNode meta = ApitableDatasheetMetaConvert.objectMapper.createObjectNode();
+            meta.set("fieldMap", ApitableDatasheetMetaConvert.objectMapper.readTree(dataA.getFieldMap()));
+            meta.set("archivedRecordIds", ApitableDatasheetMetaConvert.objectMapper.readTree(dataC.getArchIds()));
+            ArrayNode views = ApitableDatasheetRecordConvert.objectMapper.createArrayNode();
+            for (MetaViewsEntity metaViewsEntity : dataB) {
+                views.add(ApitableDatasheetRecordConvert.objectMapper.readTree(metaViewsEntity.getView()));
+            }
+            System.out.println("views size " + views.size());
+            meta.set("views", views);
+            vo.setMetaData(meta);
+            System.out.println("combine cost: " + (System.currentTimeMillis() - now2));
+            assertEquals(convert.getMetaData().path("views"), vo.getMetaData().path("views"));
+            assertEquals(convert.getMetaData().path("fieldMap"), vo.getMetaData().path("fieldMap"));
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+    @Test
     public void testGetMeta5000Records() {
 
 
